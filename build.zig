@@ -19,23 +19,22 @@ pub fn build(b: *std.build.Builder) !void {
 
     const tests = b.addTest(.{
         .name = "pixman-test",
-        .kind = .test_exe,
         .root_source_file = .{ .path = "src/main.zig" },
         .target = target,
         .optimize = optimize,
     });
     _ = try link(b, tests);
-    tests.install();
+    b.installArtifact(tests);
 
     const test_step = b.step("test", "Run tests");
-    const tests_run = tests.run();
+    const tests_run = b.addRunArtifact(tests);
     test_step.dependOn(&tests_run.step);
 }
 
 pub fn link(b: *std.build.Builder, step: *std.build.LibExeObjStep) !*std.build.LibExeObjStep {
     const libuv = try buildLibuv(b, step);
     step.linkLibrary(libuv);
-    step.addIncludePath(include_path);
+    step.addIncludePath(.{ .path = include_path });
     return libuv;
 }
 
@@ -51,8 +50,8 @@ pub fn buildLibuv(
     });
 
     // Include dirs
-    lib.addIncludePath(include_path);
-    lib.addIncludePath(root ++ "src");
+    lib.addIncludePath(.{ .path = include_path });
+    lib.addIncludePath(.{ .path = root ++ "src" });
 
     // Links
     if (target.isWindows()) {

@@ -94,7 +94,7 @@ pub const Error = blk: {
     // keep it synced.
     const info = @typeInfo(Errno).Enum;
     var errors: [info.fields.len]std.builtin.Type.Error = undefined;
-    for (info.fields) |field, i| {
+    for (info.fields, 0..) |field, i| {
         errors[i] = .{ .name = field.name };
     }
 
@@ -105,7 +105,7 @@ pub const Error = blk: {
 pub fn convertError(r: i32) !void {
     if (r >= 0) return;
 
-    return switch (@intToEnum(Errno, r)) {
+    return switch (@as(Errno, @enumFromInt(r))) {
         .E2BIG => Error.E2BIG,
         .EACCES => Error.EACCES,
         .EADDRINUSE => Error.EADDRINUSE,
