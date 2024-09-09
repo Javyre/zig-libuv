@@ -259,8 +259,8 @@ pub extern fn __srget([*c]FILE) c_int;
 pub extern fn __svfscanf([*c]FILE, [*c]const u8, va_list) c_int;
 pub extern fn __swbuf(c_int, [*c]FILE) c_int;
 pub inline fn __sputc(arg__c: c_int, arg__p: [*c]FILE) c_int {
-    var _c = arg__c;
-    var _p = arg__p;
+    const _c = arg__c;
+    const _p = arg__p;
     if (((blk: {
         const ref = &_p.*._w;
         ref.* -= 1;
@@ -335,7 +335,7 @@ pub const uint_fast64_t = u64;
 pub const intmax_t = c_long;
 pub const uintmax_t = c_ulong;
 pub fn _OSSwapInt16(arg__data: u16) callconv(.C) u16 {
-    var _data = arg__data;
+    const _data = arg__data;
     return @as(u16, @bitCast(@as(c_short, @truncate((@as(c_int, @bitCast(@as(c_uint, _data))) << @as(@import("std").math.Log2Int(c_int), @intCast(8))) | (@as(c_int, @bitCast(@as(c_uint, _data))) >> @as(@import("std").math.Log2Int(c_int), @intCast(8)))))));
 }
 pub fn _OSSwapInt32(arg__data: u32) callconv(.C) u32 {
@@ -344,7 +344,7 @@ pub fn _OSSwapInt32(arg__data: u32) callconv(.C) u32 {
     return _data;
 }
 pub fn _OSSwapInt64(arg__data: u64) callconv(.C) u64 {
-    var _data = arg__data;
+    const _data = arg__data;
     return __builtin_bswap64(_data);
 }
 pub const struct__OSUnalignedU16 = extern struct {
@@ -357,36 +357,36 @@ pub const struct__OSUnalignedU64 = extern struct {
     __val: u64 align(1),
 };
 pub fn OSReadSwapInt16(arg__base: ?*const volatile anyopaque, arg__offset: usize) callconv(.C) u16 {
-    var _base = arg__base;
-    var _offset = arg__offset;
+    const _base = arg__base;
+    const _offset = arg__offset;
     return _OSSwapInt16(@as([*c]struct__OSUnalignedU16, @ptrFromInt(@as(usize, @intCast(@intFromPtr(_base))) +% _offset)).*.__val);
 }
 pub fn OSReadSwapInt32(arg__base: ?*const volatile anyopaque, arg__offset: usize) callconv(.C) u32 {
-    var _base = arg__base;
-    var _offset = arg__offset;
+    const _base = arg__base;
+    const _offset = arg__offset;
     return _OSSwapInt32(@as([*c]struct__OSUnalignedU32, @ptrFromInt(@as(usize, @intCast(@intFromPtr(_base))) +% _offset)).*.__val);
 }
 pub fn OSReadSwapInt64(arg__base: ?*const volatile anyopaque, arg__offset: usize) callconv(.C) u64 {
-    var _base = arg__base;
-    var _offset = arg__offset;
+    const _base = arg__base;
+    const _offset = arg__offset;
     return _OSSwapInt64(@as([*c]struct__OSUnalignedU64, @ptrFromInt(@as(usize, @intCast(@intFromPtr(_base))) +% _offset)).*.__val);
 }
 pub fn OSWriteSwapInt16(arg__base: ?*volatile anyopaque, arg__offset: usize, arg__data: u16) callconv(.C) void {
-    var _base = arg__base;
-    var _offset = arg__offset;
-    var _data = arg__data;
+    const _base = arg__base;
+    const _offset = arg__offset;
+    const _data = arg__data;
     @as([*c]struct__OSUnalignedU16, @ptrFromInt(@as(usize, @intCast(@intFromPtr(_base))) +% _offset)).*.__val = _OSSwapInt16(_data);
 }
 pub fn OSWriteSwapInt32(arg__base: ?*volatile anyopaque, arg__offset: usize, arg__data: u32) callconv(.C) void {
-    var _base = arg__base;
-    var _offset = arg__offset;
-    var _data = arg__data;
+    const _base = arg__base;
+    const _offset = arg__offset;
+    const _data = arg__data;
     @as([*c]struct__OSUnalignedU32, @ptrFromInt(@as(usize, @intCast(@intFromPtr(_base))) +% _offset)).*.__val = _OSSwapInt32(_data);
 }
 pub fn OSWriteSwapInt64(arg__base: ?*volatile anyopaque, arg__offset: usize, arg__data: u64) callconv(.C) void {
-    var _base = arg__base;
-    var _offset = arg__offset;
-    var _data = arg__data;
+    const _base = arg__base;
+    const _offset = arg__offset;
+    const _data = arg__data;
     @as([*c]struct__OSUnalignedU64, @ptrFromInt(@as(usize, @intCast(@intFromPtr(_base))) +% _offset)).*.__val = _OSSwapInt64(_data);
 }
 pub const u_char = u8;
@@ -427,8 +427,8 @@ pub const struct_fd_set = extern struct {
 pub const fd_set = struct_fd_set;
 pub extern fn __darwin_check_fd_set_overflow(c_int, ?*const anyopaque, c_int) c_int;
 pub inline fn __darwin_check_fd_set(arg__a: c_int, arg__b: ?*const anyopaque) c_int {
-    var _a = arg__a;
-    var _b = arg__b;
+    const _a = arg__a;
+    const _b = arg__b;
     if (@as(usize, @intCast(@intFromPtr(&__darwin_check_fd_set_overflow))) != @as(usize, @bitCast(@as(c_long, @as(c_int, 0))))) {
         return __darwin_check_fd_set_overflow(_a, _b, @as(c_int, 0));
     } else {
@@ -437,15 +437,15 @@ pub inline fn __darwin_check_fd_set(arg__a: c_int, arg__b: ?*const anyopaque) c_
     return 0;
 }
 pub inline fn __darwin_fd_isset(arg__fd: c_int, arg__p: [*c]const struct_fd_set) c_int {
-    var _fd = arg__fd;
-    var _p = arg__p;
+    const _fd = arg__fd;
+    const _p = arg__p;
     if (__darwin_check_fd_set(_fd, @as(?*const anyopaque, @ptrCast(_p))) != 0) {
         return _p.*.fds_bits[@as(c_ulong, @bitCast(@as(c_long, _fd))) / (@sizeOf(__int32_t) *% @as(c_ulong, @bitCast(@as(c_long, @as(c_int, 8)))))] & @as(__int32_t, @bitCast(@as(c_uint, @truncate(@as(c_ulong, @bitCast(@as(c_long, @as(c_int, 1)))) << @as(@import("std").math.Log2Int(c_ulong), @intCast(@as(c_ulong, @bitCast(@as(c_long, _fd))) % (@sizeOf(__int32_t) *% @as(c_ulong, @bitCast(@as(c_long, @as(c_int, 8)))))))))));
     }
     return 0;
 }
 pub inline fn __darwin_fd_set(arg__fd: c_int, _p: [*c]struct_fd_set) void {
-    var _fd = arg__fd;
+    const _fd = arg__fd;
     if (__darwin_check_fd_set(_fd, @as(?*const anyopaque, @ptrCast(_p))) != 0) {
         _ = blk: {
             const ref = &_p.*.fds_bits[@as(c_ulong, @bitCast(@as(c_long, _fd))) / (@sizeOf(__int32_t) *% @as(c_ulong, @bitCast(@as(c_long, @as(c_int, 8)))))];
@@ -455,7 +455,7 @@ pub inline fn __darwin_fd_set(arg__fd: c_int, _p: [*c]struct_fd_set) void {
     }
 }
 pub inline fn __darwin_fd_clr(arg__fd: c_int, _p: [*c]struct_fd_set) void {
-    var _fd = arg__fd;
+    const _fd = arg__fd;
     if (__darwin_check_fd_set(_fd, @as(?*const anyopaque, @ptrCast(_p))) != 0) {
         _ = blk: {
             const ref = &_p.*.fds_bits[@as(c_ulong, @bitCast(@as(c_long, _fd))) / (@sizeOf(__int32_t) *% @as(c_ulong, @bitCast(@as(c_long, @as(c_int, 8)))))];
@@ -1431,7 +1431,7 @@ pub extern fn sigblock(c_int) c_int;
 pub extern fn sigsetmask(c_int) c_int;
 pub extern fn sigvec(c_int, [*c]struct_sigvec, [*c]struct_sigvec) c_int;
 pub inline fn __sigbits(arg___signo: c_int) c_int {
-    var __signo = arg___signo;
+    const __signo = arg___signo;
     return if (__signo > @as(c_int, 32)) @as(c_int, 0) else @as(c_int, 1) << @as(@import("std").math.Log2Int(c_int), @intCast(__signo - @as(c_int, 1)));
 }
 const union_unnamed_3 = extern union {
@@ -3012,36 +3012,36 @@ pub fn OSHostByteOrder() callconv(.C) i32 {
     return OSLittleEndian;
 }
 pub fn _OSReadInt16(arg_base: ?*const volatile anyopaque, arg_byteOffset: usize) callconv(.C) u16 {
-    var base = arg_base;
-    var byteOffset = arg_byteOffset;
+    const base = arg_base;
+    const byteOffset = arg_byteOffset;
     return @as([*c]volatile u16, @ptrFromInt(@as(usize, @intCast(@intFromPtr(base))) +% byteOffset)).*;
 }
 pub fn _OSReadInt32(arg_base: ?*const volatile anyopaque, arg_byteOffset: usize) callconv(.C) u32 {
-    var base = arg_base;
-    var byteOffset = arg_byteOffset;
+    const base = arg_base;
+    const byteOffset = arg_byteOffset;
     return @as([*c]volatile u32, @ptrFromInt(@as(usize, @intCast(@intFromPtr(base))) +% byteOffset)).*;
 }
 pub fn _OSReadInt64(arg_base: ?*const volatile anyopaque, arg_byteOffset: usize) callconv(.C) u64 {
-    var base = arg_base;
-    var byteOffset = arg_byteOffset;
+    const base = arg_base;
+    const byteOffset = arg_byteOffset;
     return @as([*c]volatile u64, @ptrFromInt(@as(usize, @intCast(@intFromPtr(base))) +% byteOffset)).*;
 }
 pub fn _OSWriteInt16(arg_base: ?*volatile anyopaque, arg_byteOffset: usize, arg_data: u16) callconv(.C) void {
-    var base = arg_base;
-    var byteOffset = arg_byteOffset;
-    var data = arg_data;
+    const base = arg_base;
+    const byteOffset = arg_byteOffset;
+    const data = arg_data;
     @as([*c]volatile u16, @ptrFromInt(@as(usize, @intCast(@intFromPtr(base))) +% byteOffset)).* = data;
 }
 pub fn _OSWriteInt32(arg_base: ?*volatile anyopaque, arg_byteOffset: usize, arg_data: u32) callconv(.C) void {
-    var base = arg_base;
-    var byteOffset = arg_byteOffset;
-    var data = arg_data;
+    const base = arg_base;
+    const byteOffset = arg_byteOffset;
+    const data = arg_data;
     @as([*c]volatile u32, @ptrFromInt(@as(usize, @intCast(@intFromPtr(base))) +% byteOffset)).* = data;
 }
 pub fn _OSWriteInt64(arg_base: ?*volatile anyopaque, arg_byteOffset: usize, arg_data: u64) callconv(.C) void {
-    var base = arg_base;
-    var byteOffset = arg_byteOffset;
-    var data = arg_data;
+    const base = arg_base;
+    const byteOffset = arg_byteOffset;
+    const data = arg_data;
     @as([*c]volatile u64, @ptrFromInt(@as(usize, @intCast(@intFromPtr(base))) +% byteOffset)).* = data;
 }
 pub const NDR_record_t = extern struct {
@@ -3136,7 +3136,7 @@ pub const mig_reply_error_t = extern struct {
     RetCode: kern_return_t,
 };
 pub fn __NDR_convert__mig_reply_error_t(arg_x: [*c]mig_reply_error_t) callconv(.C) void {
-    var x = arg_x;
+    const x = arg_x;
     _ = @TypeOf(x);
 }
 pub extern fn clock_set_time(clock_ctrl: clock_ctrl_t, new_time: mach_timespec_t) kern_return_t;

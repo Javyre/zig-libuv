@@ -55,7 +55,7 @@ pub fn pipe(read_flags: Flags, write_flags: Flags) !Pair {
 }
 
 pub fn init(alloc: Allocator, loop: Loop, ipc: bool) !Pipe {
-    var handle = try alloc.create(c.uv_pipe_t);
+    const handle = try alloc.create(c.uv_pipe_t);
     errdefer alloc.destroy(handle);
     try errors.convertError(c.uv_pipe_init(loop.loop, handle, @intFromBool(ipc)));
     return Pipe{ .handle = handle };

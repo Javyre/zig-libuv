@@ -17,7 +17,7 @@ pub fn Stream(comptime T: type) type {
 
     return struct {
         // note: this has to be here: https://github.com/ziglang/zig/issues/11367
-        const tInfo = @typeInfo(T).Struct;
+        const tInfo = @typeInfo(T).@"struct";
         const HandleType = tInfo.fields[0].type;
 
         /// Returns 1 if the stream is readable, 0 otherwise.
@@ -151,7 +151,7 @@ pub const WriteReq = struct {
     req: *T,
 
     pub fn init(alloc: Allocator) !WriteReq {
-        var req = try alloc.create(c.uv_write_t);
+        const req = try alloc.create(c.uv_write_t);
         errdefer alloc.destroy(req);
         return WriteReq{ .req = req };
     }
@@ -164,7 +164,7 @@ pub const WriteReq = struct {
     /// Pointer to the stream where this write request is running.
     /// T should be a high-level handle type such as "Pipe".
     pub fn handle(self: WriteReq, comptime HT: type) ?HT {
-        const tInfo = @typeInfo(HT).Struct;
+        const tInfo = @typeInfo(HT).@"struct";
         const HandleType = tInfo.fields[0].type;
 
         return if (self.req.handle) |ptr|

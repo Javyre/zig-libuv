@@ -92,13 +92,13 @@ pub const Errno = enum(i32) {
 pub const Error = blk: {
     // We produce these from the Errno enum so that we can easily
     // keep it synced.
-    const info = @typeInfo(Errno).Enum;
+    const info = @typeInfo(Errno).@"enum";
     var errors: [info.fields.len]std.builtin.Type.Error = undefined;
     for (info.fields, 0..) |field, i| {
         errors[i] = .{ .name = field.name };
     }
 
-    break :blk @Type(.{ .ErrorSet = &errors });
+    break :blk @Type(.{ .error_set = &errors });
 };
 
 /// Convert the result of a libuv API call to an error (or no error).

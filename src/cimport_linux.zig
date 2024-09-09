@@ -333,27 +333,27 @@ pub const u_int32_t = __uint32_t;
 pub const u_int64_t = __uint64_t;
 pub const register_t = c_long;
 pub fn __bswap_16(arg___bsx: __uint16_t) callconv(.C) __uint16_t {
-    var __bsx = arg___bsx;
+    const __bsx = arg___bsx;
     return @as(__uint16_t, @bitCast(@as(c_short, @truncate(((@as(c_int, @bitCast(@as(c_uint, __bsx))) >> @as(@import("std").math.Log2Int(c_int), @intCast(8))) & @as(c_int, 255)) | ((@as(c_int, @bitCast(@as(c_uint, __bsx))) & @as(c_int, 255)) << @as(@import("std").math.Log2Int(c_int), @intCast(8)))))));
 }
 pub fn __bswap_32(arg___bsx: __uint32_t) callconv(.C) __uint32_t {
-    var __bsx = arg___bsx;
+    const __bsx = arg___bsx;
     return ((((__bsx & @as(c_uint, 4278190080)) >> @as(@import("std").math.Log2Int(c_uint), @intCast(24))) | ((__bsx & @as(c_uint, 16711680)) >> @as(@import("std").math.Log2Int(c_uint), @intCast(8)))) | ((__bsx & @as(c_uint, 65280)) << @as(@import("std").math.Log2Int(c_uint), @intCast(8)))) | ((__bsx & @as(c_uint, 255)) << @as(@import("std").math.Log2Int(c_uint), @intCast(24)));
 }
 pub fn __bswap_64(arg___bsx: __uint64_t) callconv(.C) __uint64_t {
-    var __bsx = arg___bsx;
+    const __bsx = arg___bsx;
     return @as(__uint64_t, @bitCast(@as(c_ulong, @truncate(((((((((@as(c_ulonglong, @bitCast(@as(c_ulonglong, __bsx))) & @as(c_ulonglong, 18374686479671623680)) >> @as(@import("std").math.Log2Int(c_ulonglong), @intCast(56))) | ((@as(c_ulonglong, @bitCast(@as(c_ulonglong, __bsx))) & @as(c_ulonglong, 71776119061217280)) >> @as(@import("std").math.Log2Int(c_ulonglong), @intCast(40)))) | ((@as(c_ulonglong, @bitCast(@as(c_ulonglong, __bsx))) & @as(c_ulonglong, 280375465082880)) >> @as(@import("std").math.Log2Int(c_ulonglong), @intCast(24)))) | ((@as(c_ulonglong, @bitCast(@as(c_ulonglong, __bsx))) & @as(c_ulonglong, 1095216660480)) >> @as(@import("std").math.Log2Int(c_ulonglong), @intCast(8)))) | ((@as(c_ulonglong, @bitCast(@as(c_ulonglong, __bsx))) & @as(c_ulonglong, 4278190080)) << @as(@import("std").math.Log2Int(c_ulonglong), @intCast(8)))) | ((@as(c_ulonglong, @bitCast(@as(c_ulonglong, __bsx))) & @as(c_ulonglong, 16711680)) << @as(@import("std").math.Log2Int(c_ulonglong), @intCast(24)))) | ((@as(c_ulonglong, @bitCast(@as(c_ulonglong, __bsx))) & @as(c_ulonglong, 65280)) << @as(@import("std").math.Log2Int(c_ulonglong), @intCast(40)))) | ((@as(c_ulonglong, @bitCast(@as(c_ulonglong, __bsx))) & @as(c_ulonglong, 255)) << @as(@import("std").math.Log2Int(c_ulonglong), @intCast(56)))))));
 }
 pub fn __uint16_identity(arg___x: __uint16_t) callconv(.C) __uint16_t {
-    var __x = arg___x;
+    const __x = arg___x;
     return __x;
 }
 pub fn __uint32_identity(arg___x: __uint32_t) callconv(.C) __uint32_t {
-    var __x = arg___x;
+    const __x = arg___x;
     return __x;
 }
 pub fn __uint64_identity(arg___x: __uint64_t) callconv(.C) __uint64_t {
-    var __x = arg___x;
+    const __x = arg___x;
     return __x;
 }
 pub const __sigset_t = extern struct {

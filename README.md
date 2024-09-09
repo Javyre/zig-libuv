@@ -42,21 +42,32 @@ try testing.expect(called);
 
 ## Usage
 
-To **build libuv:**
+Make sure to add this package as a dependency in your `build.zig.zon`.
+Then to **build libuv:**
 
 ```zig
-const libuv = @import("path/to/zig-libuv/build.zig");
-
 pub fn build(b: *std.build.Builder) !void {
+    const target = b.standardTargetOptions(.{});
+    const optimize = b.standardOptimizeOption(.{});
+
     // ...
 
-    const exe = b.addExecutable("my-program", "src/main.zig");
-    _ = libuv.link(b, exe);
+    const libuv = b.dependency("zig_libuv", .{
+        .target = target,
+        .optimize = optimize,
+    });
+
+    const exe = b.addExecutable(.{
+        .name = "example",
+        .root_source_file = b.path("src/main.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    // To link the original libuv library:
+    exe.linkLibrary(libuv.artifact("libuv"));
+    // To **use the Zig bindings**, add the module:
+    exe.root_module.addImport("uv", libuv.module("uv"));
+
+    // ...
 }
-```
-
-To **use the Zig bindings**, add the package:
-
-```zig
-exe.addPackage(libuv.pkg);
 ```

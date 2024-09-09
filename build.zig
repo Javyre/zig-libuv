@@ -1,60 +1,58 @@
 const std = @import("std");
 
 /// Directories with our includes.
-const root = thisDir() ++ "/vendor/libuv/";
-const include_path = root ++ "include";
-
-pub const pkg = std.build.Pkg{
-    .name = "libuv",
-    .source = .{ .path = thisDir() ++ "/src/main.zig" },
-};
+const include_path = "vendor/libuv/include/";
+const src_path = "vendor/libuv/src/";
 
 fn thisDir() []const u8 {
     return std.fs.path.dirname(@src().file) orelse ".";
 }
 
-pub fn build(b: *std.build.Builder) !void {
+pub fn build(b: *std.Build) !void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
-    const tests = b.addTest(.{
-        .name = "pixman-test",
-        .root_source_file = .{ .path = "src/main.zig" },
+    const libuv = try buildLibuv(b, target, optimize);
+    b.installArtifact(libuv);
+
+    const uv = b.addModule("uv", .{
+        .root_source_file = b.path("src/main.zig"),
         .target = target,
         .optimize = optimize,
     });
-    _ = try link(b, tests);
-    b.installArtifact(tests);
+    uv.linkLibrary(libuv);
+
+    const tests = b.addTest(.{
+        .name = "pixman-test",
+        .root_source_file = b.path("src/main.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    tests.linkLibrary(libuv);
 
     const test_step = b.step("test", "Run tests");
     const tests_run = b.addRunArtifact(tests);
     test_step.dependOn(&tests_run.step);
 }
 
-pub fn link(b: *std.build.Builder, step: *std.build.LibExeObjStep) !*std.build.LibExeObjStep {
-    const libuv = try buildLibuv(b, step);
-    step.linkLibrary(libuv);
-    step.addIncludePath(.{ .path = include_path });
-    return libuv;
-}
-
 pub fn buildLibuv(
-    b: *std.build.Builder,
-    step: *std.build.LibExeObjStep,
-) !*std.build.LibExeObjStep {
-    const target = step.target;
+    b: *std.Build,
+    target: std.Build.ResolvedTarget,
+    optimize: std.builtin.OptimizeMode,
+) !*std.Build.Step.Compile {
     const lib = b.addStaticLibrary(.{
-        .name = "uv",
+        .name = "libuv",
         .target = target,
-        .optimize = step.optimize,
+        .optimize = optimize,
     });
 
     // Include dirs
-    lib.addIncludePath(.{ .path = include_path });
-    lib.addIncludePath(.{ .path = root ++ "src" });
+    lib.addIncludePath(b.path(include_path));
+    lib.addIncludePath(b.path(src_path));
+    lib.installHeadersDirectory(b.path(include_path), "libuv", .{});
 
     // Links
-    if (target.isWindows()) {
+    if (target.result.os.tag == .windows) {
         lib.linkSystemLibrary("psapi");
         lib.linkSystemLibrary("user32");
         lib.linkSystemLibrary("advapi32");
@@ -62,7 +60,7 @@ pub fn buildLibuv(
         lib.linkSystemLibrary("userenv");
         lib.linkSystemLibrary("ws2_32");
     }
-    if (target.isLinux()) {
+    if (target.result.os.tag == .linux) {
         lib.linkSystemLibrary("pthread");
     }
     lib.linkLibC();
@@ -70,23 +68,22 @@ pub fn buildLibuv(
     // Compilation
     var flags = std.ArrayList([]const u8).init(b.allocator);
     defer flags.deinit();
-    // try flags.appendSlice(&.{});
 
-    if (!target.isWindows()) {
+    if (target.result.os.tag != .windows) {
         try flags.appendSlice(&.{
             "-D_FILE_OFFSET_BITS=64",
             "-D_LARGEFILE_SOURCE",
         });
     }
 
-    if (target.isLinux()) {
+    if (target.result.os.tag == .linux) {
         try flags.appendSlice(&.{
             "-D_GNU_SOURCE",
             "-D_POSIX_C_SOURCE=200112",
         });
     }
 
-    if (target.isDarwin()) {
+    if (target.result.isDarwin()) {
         try flags.appendSlice(&.{
             "-D_DARWIN_UNLIMITED_SELECT=1",
             "-D_DARWIN_USE_64_BIT_INODE=1",
@@ -94,82 +91,79 @@ pub fn buildLibuv(
     }
 
     // C files common to all platforms
-    lib.addCSourceFiles(&.{
-        root ++ "src/fs-poll.c",
-        root ++ "src/idna.c",
-        root ++ "src/inet.c",
-        root ++ "src/random.c",
-        root ++ "src/strscpy.c",
-        root ++ "src/strtok.c",
-        root ++ "src/threadpool.c",
-        root ++ "src/timer.c",
-        root ++ "src/uv-common.c",
-        root ++ "src/uv-data-getter-setters.c",
-        root ++ "src/version.c",
-    }, flags.items);
+    lib.addCSourceFiles(.{ .files = &.{
+        src_path ++ "fs-poll.c",
+        src_path ++ "idna.c",
+        src_path ++ "inet.c",
+        src_path ++ "random.c",
+        src_path ++ "strscpy.c",
+        src_path ++ "strtok.c",
+        src_path ++ "threadpool.c",
+        src_path ++ "timer.c",
+        src_path ++ "uv-common.c",
+        src_path ++ "uv-data-getter-setters.c",
+        src_path ++ "version.c",
+    }, .flags = flags.items });
 
-    if (!target.isWindows()) {
-        lib.addCSourceFiles(&.{
-            root ++ "src/unix/async.c",
-            root ++ "src/unix/core.c",
-            root ++ "src/unix/dl.c",
-            root ++ "src/unix/fs.c",
-            root ++ "src/unix/getaddrinfo.c",
-            root ++ "src/unix/getnameinfo.c",
-            root ++ "src/unix/loop-watcher.c",
-            root ++ "src/unix/loop.c",
-            root ++ "src/unix/pipe.c",
-            root ++ "src/unix/poll.c",
-            root ++ "src/unix/process.c",
-            root ++ "src/unix/random-devurandom.c",
-            root ++ "src/unix/signal.c",
-            root ++ "src/unix/stream.c",
-            root ++ "src/unix/tcp.c",
-            root ++ "src/unix/thread.c",
-            root ++ "src/unix/tty.c",
-            root ++ "src/unix/udp.c",
-        }, flags.items);
+    if (target.result.os.tag != .windows) {
+        lib.addCSourceFiles(.{ .files = &.{
+            src_path ++ "unix/async.c",
+            src_path ++ "unix/core.c",
+            src_path ++ "unix/dl.c",
+            src_path ++ "unix/fs.c",
+            src_path ++ "unix/getaddrinfo.c",
+            src_path ++ "unix/getnameinfo.c",
+            src_path ++ "unix/loop-watcher.c",
+            src_path ++ "unix/loop.c",
+            src_path ++ "unix/pipe.c",
+            src_path ++ "unix/poll.c",
+            src_path ++ "unix/process.c",
+            src_path ++ "unix/random-devurandom.c",
+            src_path ++ "unix/signal.c",
+            src_path ++ "unix/stream.c",
+            src_path ++ "unix/tcp.c",
+            src_path ++ "unix/thread.c",
+            src_path ++ "unix/tty.c",
+            src_path ++ "unix/udp.c",
+        }, .flags = flags.items });
     }
 
-    if (target.isLinux() or target.isDarwin()) {
-        lib.addCSourceFiles(&.{
-            root ++ "src/unix/proctitle.c",
-        }, flags.items);
+    if (target.result.os.tag == .linux or target.result.isDarwin()) {
+        lib.addCSourceFiles(.{ .files = &.{
+            src_path ++ "unix/proctitle.c",
+        }, .flags = flags.items });
     }
 
-    if (target.isLinux()) {
-        lib.addCSourceFiles(&.{
-            root ++ "src/unix/linux.c",
-            root ++ "src/unix/procfs-exepath.c",
-            root ++ "src/unix/random-getrandom.c",
-            root ++ "src/unix/random-sysctl-linux.c",
-        }, flags.items);
+    if (target.result.os.tag == .linux) {
+        lib.addCSourceFiles(.{ .files = &.{
+            src_path ++ "unix/linux.c",
+            src_path ++ "unix/procfs-exepath.c",
+            src_path ++ "unix/random-getrandom.c",
+            src_path ++ "unix/random-sysctl-linux.c",
+        }, .flags = flags.items });
     }
 
-    if (target.isDarwin() or
-        target.isOpenBSD() or
-        target.isNetBSD() or
-        target.isFreeBSD() or
-        target.isDragonFlyBSD())
+    if (target.result.isDarwin() or
+        target.result.isBSD())
     {
-        lib.addCSourceFiles(&.{
-            root ++ "src/unix/bsd-ifaddrs.c",
-            root ++ "src/unix/kqueue.c",
-        }, flags.items);
+        lib.addCSourceFiles(.{ .files = &.{
+            src_path ++ "unix/bsd-ifaddrs.c",
+            src_path ++ "unix/kqueue.c",
+        }, .flags = flags.items });
     }
 
-    if (target.isDarwin() or target.isOpenBSD()) {
-        lib.addCSourceFiles(&.{
-            root ++ "src/unix/random-getentropy.c",
-        }, flags.items);
+    if (target.result.isDarwin() or target.result.os.tag == .openbsd) {
+        lib.addCSourceFiles(.{ .files = &.{
+            src_path ++ "unix/random-getentropy.c",
+        }, .flags = flags.items });
     }
 
-    if (target.isDarwin()) {
-        lib.addCSourceFiles(&.{
-            root ++ "src/unix/darwin-proctitle.c",
-            root ++ "src/unix/darwin.c",
-            root ++ "src/unix/fsevents.c",
-        }, flags.items);
+    if (target.result.isDarwin()) {
+        lib.addCSourceFiles(.{ .files = &.{
+            src_path ++ "unix/darwin-proctitle.c",
+            src_path ++ "unix/darwin.c",
+            src_path ++ "unix/fsevents.c",
+        }, .flags = flags.items });
     }
 
     return lib;

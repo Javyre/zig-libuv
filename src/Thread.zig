@@ -38,7 +38,7 @@ pub fn initData(
     // to do the proper casts for the callback.
     const Data = @TypeOf(data);
     const dataInfo = @typeInfo(Data);
-    if (dataInfo != .Pointer) @compileError("data must be a pointer type");
+    if (dataInfo != .pointer) @compileError("data must be a pointer type");
 
     const CWrapper = struct {
         pub fn wrapper(arg: ?*anyopaque) callconv(.C) void {
