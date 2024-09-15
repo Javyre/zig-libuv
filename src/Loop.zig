@@ -20,12 +20,11 @@ pub fn init(alloc: Allocator) !Loop {
 
 /// Releases all internal loop resources. Call this function only when the
 /// loop has finished executing and all open handles and requests have been
-/// closed, or this will silently fail (in debug mode it will panic).
+/// closed, or this will panic.
 pub fn deinit(self: *Loop, alloc: Allocator) void {
     // deinit functions idiomatically cannot fail in Zig, so we do the
-    // next best thing here and assert so that in debug mode you'll get
-    // a crash.
-    std.debug.assert(c.uv_loop_close(self.loop) >= 0);
+    // next best thing here and crash
+    errors.convertError(c.uv_loop_close(self.loop)) catch unreachable;
     alloc.destroy(self.loop);
     self.* = undefined;
 }
